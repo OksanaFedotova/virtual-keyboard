@@ -1,3 +1,15 @@
+form {
+    width: 100%;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+}
+.info-container {
+    display: flex;
+    height: 100px;
+    justify-content: center;
+    align-items: flex-end;
+}
 .keyboard {
     position: fixed;
     left: 0;
@@ -33,11 +45,17 @@
     -webkit-tap-highlight-color: transparent;
     position: relative;
 }
-
-.keyboard__key:active {
-    background: rgba(255, 255, 255, 0.12);
+.active {
+    background: rgba(22, 230, 64, 0.779);
+    border-radius: 25px;
 }
-
+.keyboard__key:active {
+    background: rgba(22, 230, 64, 0.779);
+    border-radius: 25px;
+}
+.keyboard__key:hover {
+    background: rgba(22, 230, 64, 0.779);
+}
 .keyboard__key--wide {
     width: 12%;
 }

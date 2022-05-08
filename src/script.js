@@ -1,13 +1,17 @@
-//import { main } from './createKey.js';
-//import {keyboardLayout} from './keyboardLayout.js';
 import form from './input.js';
 import { Keyboard } from './Keyboard.js';
 import { keyboardLayout } from './keyboardLayout.js';
-//import {toggleCapsLock, backspace, tab, enter, shift} from './listeners.js';
 
 const body = document.querySelector('body');
 body.append(form);
 const textarea = form.querySelector('textarea');
+
+const infoContainer = document.createElement('div');
+const info = document.createElement('span');
+info.innerText = 'Клавиатура создана в операционной системе Mac. Для переключения языка комбинация: левыe ctrl + alt';
+infoContainer.append(info);
+infoContainer.classList.add('info-container')
+body.append(infoContainer);
 
 const main = document.createElement("div");
 main.classList.add("keyboard");
@@ -18,13 +22,40 @@ const properties = {
     capsed: false,
     shifted: false
 }
+let language;
+let myStorage = window.localStorage;
+if(myStorage.getItem("language")) {
+    language = myStorage.getItem("language")
+} else {
+    language = 'keyEnglish';
+}
 
-const keyboard = new Keyboard(keyboardLayout, 'keyEnglish', properties);
-keyboard.init();
-const keysContainer = keyboard.getContainer();
-const keys = keysContainer.querySelectorAll('button');
-keysContainer.classList.add("keyboard__keys");
-main.append(keysContainer)
+
+let pressedKeys = new Set();
+const switchLanguage = () => {
+        language = myStorage.getItem("language");
+        language = language == 'keyEnglish'? 'keyCyrillic': 'keyEnglish';
+        myStorage.clear()
+        myStorage.setItem("language", language)
+        keysContainer = createKeyboard();
+        keys = keysContainer.querySelectorAll('button');
+        addListeners();
+}
+
+const createKeyboard = () => {
+    let keyboard = new Keyboard(keyboardLayout, language, properties);
+    keyboard.init();
+    let keysContainer = keyboard.getContainer();
+    keysContainer.classList.add("keyboard__keys");
+    if(main.firstChild) {
+        main.firstChild.remove()
+    } 
+    main.append(keysContainer);
+    return keysContainer;
+}
+
+let keysContainer = createKeyboard();
+let keys = keysContainer.querySelectorAll('button');
 
 const toggleCapsLock = () =>  {
     properties.capsed = !properties.capsed;
@@ -48,7 +79,7 @@ const enter = () => {
     textarea.value = properties.value;
     textarea.focus();
 }
-//const arrowDown 
+
 const space = () => {
     properties.value += " ";
     textarea.value = properties.value;
@@ -58,8 +89,14 @@ const shift = () => {
     keys.forEach((key) => {
         keyboardLayout.map((element) => {
             if(key.dataset.code === element.code) {
-                if (element.shifted) {
-                    key.innerHTML = properties.shifted? element.shifted: element.keyEnglish
+                if (language === 'keyEnglish') {
+                    if (element.shifted) {
+                        key.innerHTML = properties.shifted? element.shifted: element.keyEnglish
+                    }
+                } else {
+                    if (element.cyrillicShifted) {
+                        key.innerHTML = properties.shifted? element.cyrillicShifted: element.keyCyrillic || element.keyEnglish
+                    }
                 }
                 if(key.innerHTML.length < 2) {
                     key.innerHTML = properties.shifted? key.innerHTML.toUpperCase(): key.innerHTML.toLowerCase();
@@ -69,16 +106,24 @@ const shift = () => {
         })
     })
 }
-const arrowLeft = (key) => {
-    console.log(key.innerHTML)
-    properties.value += "\b";
+
+const arrowLeft = () => {
+    properties.value += "◀";
     textarea.value = properties.value;
-    console.log(properties.value)
-    //textarea.selectionStart = textarea.value.length - 1;
+    textarea.focus();
+}
+const arrowUp = () => {
+    properties.value += "▲";
+    textarea.value = properties.value;
+    textarea.focus();
+}
+const arrowRight = () => {
+    properties.value += "▶";
+    textarea.value = properties.value;
     textarea.focus();
 }
 const arrowDown = () => {
-    properties.value += "\v";
+    properties.value += "▼";
     textarea.value = properties.value;
     textarea.focus();
 }
@@ -92,35 +137,40 @@ const listeners = {
     tab: tab, 
     enter: enter,
     space: space,
-  //  arrowLeft: arrowLeft
-   // shift: shift
+    arrowLeft: arrowLeft,
+    arrowDown: arrowDown,
+    arrowUp: arrowUp,
+    arrowRight: arrowRight
 }
-keys.forEach((key) => {
-    const listener = key.dataset.code[0].toLowerCase() + key.dataset.code.slice(1);
-    if(listeners[listener]) {
-        key.addEventListener('click', listeners[listener])
-    } else if (listener == 'shiftLeft' || listener == 'shiftRight') {
-        key.addEventListener('mousedown', () => {
-                shift(keyboardLayout, keys);
-                if (properties.shifted) {
-                    key.addEventListener('mouseup', () => shift(keyboardLayout, keys));
-                }
-            });
-    }
-    else {
-            key.addEventListener('click', () => {
-                console.log(key.innerHTML, EventTarget)
-            addSign(key)
-        })
-    }
-})
+const addListeners = () => {
+    keys.forEach((key) => {
+       //key.classList.toggle('active');
+        const listener = key.dataset.code[0].toLowerCase() + key.dataset.code.slice(1);
+        if(listeners[listener]) {
+            key.addEventListener('click', listeners[listener])
+        } else if (listener == 'shiftLeft' || listener == 'shiftRight') {
+            key.addEventListener('mousedown', () => {
+                    shift(keyboardLayout, keys);
+                    if (properties.shifted) {
+                        key.addEventListener('mouseup', () => shift(keyboardLayout, keys));
+                    }
+                });
+        }
+        else if (key.innerText.length < 3) {
+                key.addEventListener('click', () => {
+                addSign(key)
+            })
+        }
+    })
+}
+addListeners()
 document.onkeydown = function(event) {
     textarea.focus();
     textarea.selectionStart = textarea.value.length; 
     event.preventDefault();
      keys.forEach((key) => {
                 if(event.code == key.dataset.code) {
-                     key.classList.toggle('active');
+                     key.classList.add('active');
                      switch (key.innerText) {
                         case "backspace": 
                             backspace()
@@ -137,22 +187,40 @@ document.onkeydown = function(event) {
                         case "keyboard_return":
                             enter()
                         break;
-                        case "shift":
+                        case "keyboard_arrow_up":
                            shift()
                         break;
+                        case "Control":
+                        case "Alt":
+                            pressedKeys.add(event.code);
+                            if (pressedKeys.has('ControlLeft') && pressedKeys.has("AltLeft")) {
+                                switchLanguage();
+                            }
                         }
                      if (key.innerText.length < 3) {
                         addSign(key);
                      }
-                     //textarea.value = properties.value;
                  }
             })  
 }
 document.onkeyup = function(event) { 
     event.preventDefault();
-    if (event.code == 'CapsLock') {
-        toggleCapsLock()
-    } else if (event.code == 'ShiftLeft' || event.code == 'ShiftRight') {
-        shift()
-    }
+    switch (event.code) {
+        case 'CapsLock':
+            toggleCapsLock()
+            break;
+        case 'ShiftLeft':
+        case 'ShiftRight':
+            shift()
+            break; 
+        case 'ControlLeft':
+            pressedKeys.delete(event.code);
+            break;
+        case "AltLeft":
+            pressedKeys.delete(event.code);
+            break;
+    } 
+    keys.forEach((key) => key.classList.remove('active'))
 }
+
+
