@@ -1,12 +1,10 @@
-const createIconHTML = (icon_name, key, code) => {
-    key.setAttribute('data-code', `${code}`);
-    const icon = `<i class="material-icons">${icon_name}</i>`
-    return icon;
-};
+import createIconHTML from "./createIcon.js";
 
 export const createKey = (element, language) => {
+    if(!element[language]) {
+        element[language] = element["keyEnglish"];
+    }
     const keyButton = document.createElement('button');
-
     switch (element.code) {
         case "Backspace":
             keyButton.classList.add("keyboard__key--wide");
@@ -42,11 +40,15 @@ export const createKey = (element, language) => {
             break;
         case "ArrowDown":
             keyButton.innerHTML = createIconHTML("arrow_drop_down", keyButton, element.code);
-            break;
-            
+            break; 
         case "ShiftLeft":
         case "ShiftRight":
             keyButton.innerHTML = createIconHTML("keyboard_arrow_up", keyButton, element.code);
+            break;
+        case 'MetaLeft':
+        case 'MetaRight':
+            keyButton.innerText = 'cmd';
+            keyButton.setAttribute('data-code', `${element.code}`);
             break;
         default:
             keyButton.innerText = `${element[language]}`;
