@@ -1,4 +1,4 @@
-import form from './input.js';
+import form from './form.js';
 import { Keyboard } from './Keyboard.js';
 import { keyboardLayout } from './keyboardLayout.js';
 
@@ -144,7 +144,6 @@ const listeners = {
 }
 const addListeners = () => {
     keys.forEach((key) => {
-       //key.classList.toggle('active');
         const listener = key.dataset.code[0].toLowerCase() + key.dataset.code.slice(1);
         if(listeners[listener]) {
             key.addEventListener('click', listeners[listener])
