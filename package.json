@@ -2,5 +2,29 @@
   "devDependencies": {
     "eslint": "^8.14.0",
     "eslint-config-airbnb": "^19.0.4"
+  },
+  "name": "virtual-keyboard",
+  "description": "https://oksanafedotova.github.io/virtual-keyboard/src/index.html",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OksanaFedotova/virtual-keyboard.git"
+  },
+  "keywords": [
+    "virtual",
+    "keyboard"
+  ],
+  "author": "Oksana Fedotova",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/OksanaFedotova/virtual-keyboard/issues"
+  },
+  "homepage": "https://github.com/OksanaFedotova/virtual-keyboard#readme",
+  "dependencies": {
+    "eslint-scope": "^7.1.1"
   }
 }
